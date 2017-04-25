@@ -11,5 +11,12 @@
 
     <artifactId>titanic</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.datavec</groupId>
+            <artifactId>datavec-api</artifactId>
+            <version>0.8.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>

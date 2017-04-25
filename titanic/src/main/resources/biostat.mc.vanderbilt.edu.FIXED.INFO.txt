@@ -1,0 +1,13 @@
+Source: http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.xls
+Date: 2017-04-25
+converted to, Western Europe (Windows-1252/WinLatin 1), English (USA), comma-separated
+added missing values by hand (with LibreOffice)
+
+AverageAge=AVERAGE(E2:E1310) -->29.8811
+ageFixed=IF(ISBLANK(E2),29.8811,E2)
+
+AverageFare=33.3
+fareFixed=IF(ISBLANK(J2),33.3,J2)
+
+AverageEmbarked="S"
+embarkedFixed=IF(ISBLANK(M2),"S",M2)
