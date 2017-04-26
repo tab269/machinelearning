@@ -24,6 +24,8 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,14 +53,12 @@ public class TitanicClassifierTrainer {
         int skipNumLines = 1;
         int labelIndex = 1;
 
-        int seed = 123;
+        int seed = 6;
         int inputHiddenFactor = 8;
         int numOutputs = 2;
         double learningRate = 0.01;
-        int nEpochs = 4096;
-        int nExamples = 1309;
-        int batchSize = nExamples / 1;
-        int iterations = (int)Math.ceil(((double)nExamples / batchSize));
+        int batchSize = 1309;
+        int iterations = 1000;
 
         Schema inputDataSchema = new Schema.Builder()
                 .addColumnInteger("pclass")
@@ -106,37 +106,44 @@ public class TitanicClassifierTrainer {
         DataSet trainDS = splitTestAndTrain.getTrain();
         DataSet testDS = splitTestAndTrain.getTest();
 
+        DataNormalization normalizer = new NormalizerStandardize();
+        normalizer.fit(trainDS);        //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
+        normalizer.transform(trainDS);  //Apply normalization to the training data
+        normalizer.transform(testDS);   //Apply normalization to the test data. This is using statistics calculated from the *training* set
+
+
         int numInputs = tp.getFinalSchema().numColumns() - 1;
         int numHiddenNodes = numInputs * inputHiddenFactor;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
+                .activation(Activation.TANH)
+                .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(learningRate)
-                .updater(Updater.NESTEROVS).momentum(0.9)
+                .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
-                        .weightInit(WeightInit.XAVIER)
-                        .activation(Activation.RELU)
                         .build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .weightInit(WeightInit.XAVIER)
-                        .activation(Activation.SOFTMAX).weightInit(WeightInit.XAVIER)
-                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .layer(1, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
+                        .build())
+                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs)
+                        .build())
                 .pretrain(false).backprop(true).build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(new ScoreIterationListener((int) Math.ceil((0.1 * nEpochs))));
+        model.setListeners(new ScoreIterationListener((int) Math.ceil((0.1 * iterations))));
 
         log.info("Train model ...");
-        for (int i = 0; i < nEpochs; i++) {
-            model.fit(trainDS);
-        }
+        model.fit(trainDS);
 
         log.info("Evaluate model ...");
         Evaluation evaluation = new Evaluation(numOutputs);
-        INDArray prediction = model.output(testDS.getFeatures(), false);
+//        while ()
+        INDArray prediction = model.output(testDS.getFeatureMatrix());
         evaluation.eval(testDS.getLabels(), prediction);
         log.info(evaluation.stats());
 
