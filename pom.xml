@@ -12,6 +12,7 @@
         <module>titanic</module>
         <module>facial-emotion-recognition</module>
         <module>model-transport</module>
+        <module>mnist</module>
     </modules>
 
     <properties>

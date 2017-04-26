@@ -136,7 +136,7 @@ public class TitanicClassifierTrainer {
 
         log.info("Evaluate model ...");
         Evaluation evaluation = new Evaluation(numOutputs);
-        INDArray prediction = model.output(testDS.getFeatures());
+        INDArray prediction = model.output(testDS.getFeatures(), false);
         evaluation.eval(testDS.getLabels(), prediction);
         log.info(evaluation.stats());
 
