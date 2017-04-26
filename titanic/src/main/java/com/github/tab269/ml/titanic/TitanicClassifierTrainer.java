@@ -138,14 +138,13 @@ public class TitanicClassifierTrainer {
         Evaluation evaluation = new Evaluation(numOutputs);
         INDArray prediction = model.output(testDS.getFeatures());
         evaluation.eval(testDS.getLabels(), prediction);
-        System.out.println(evaluation.stats());
+        log.info(evaluation.stats());
 
         if (evaluation.accuracy() >= 0.75) {
-            log.info("Trained a good model, saving it ...");
+            log.info("Trained a good model, saving it to ...\n" + modelFilename);
             File d = new File(modelPath);
             if (!d.exists()) d.mkdir();
             File f = new File(modelFilename);
-            System.out.println(modelFilename);
             if (!f.exists()) f.createNewFile();
             ModelSerializer.writeModel(model, f, false);
         }
