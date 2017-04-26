@@ -35,12 +35,12 @@ import java.util.Date;
 import java.util.Random;
 
 /**
- * Classifier that trains on the titanic dataset.
+ * Trains a neural net on the titanic dataset.
  * Saves relatively good models to file.
  * @author Thomas Bertz
  */
-public class TitanicClassifier {
-    private static Logger log = LoggerFactory.getLogger(TitanicClassifier.class);
+public class TitanicClassifierTrainer {
+    private static Logger log = LoggerFactory.getLogger(TitanicClassifierTrainer.class);
     private static final String modelPath = "titanic/trained-models/";
     private static final String modelFilenamePrefix = "TitanicClassifier";
     private static final String modelFilenameInfix = "." + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
@@ -141,7 +141,7 @@ public class TitanicClassifier {
         System.out.println(evaluation.stats());
 
         if (evaluation.accuracy() >= 0.75) {
-            log.info("Trained a relatively good model, saving it ...");
+            log.info("Trained a good model, saving it ...");
             File d = new File(modelPath);
             if (!d.exists()) d.mkdir();
             File f = new File(modelFilename);
