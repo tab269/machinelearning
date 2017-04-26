@@ -41,10 +41,11 @@ import java.util.Random;
  */
 public class TitanicClassifier {
     private static Logger log = LoggerFactory.getLogger(TitanicClassifier.class);
-    private static final String modelFilenamePrefix = "titanic/trained-models/" + "TitanicClassifier";
+    private static final String modelPath = "titanic/trained-models/";
+    private static final String modelFilenamePrefix = "TitanicClassifier";
     private static final String modelFilenameInfix = "." + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
     private static final String modelFilenamePostfix = ".model.dl4j";
-    private static final String modelFilename = modelFilenamePrefix + modelFilenameInfix + modelFilenamePostfix;
+    private static final String modelFilename = modelPath + modelFilenamePrefix + modelFilenameInfix + modelFilenamePostfix;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         int skipNumLines = 1;
@@ -54,7 +55,7 @@ public class TitanicClassifier {
         int inputHiddenFactor = 8;
         int numOutputs = 2;
         double learningRate = 0.01;
-        int nEpochs = 8192;
+        int nEpochs = 4096;
         int nExamples = 1309;
         int batchSize = nExamples / 1;
         int iterations = (int)Math.ceil(((double)nExamples / batchSize));
@@ -141,7 +142,10 @@ public class TitanicClassifier {
 
         if (evaluation.accuracy() >= 0.75) {
             log.info("Trained a relatively good model, saving it ...");
+            File d = new File(modelPath);
+            if (!d.exists()) d.mkdir();
             File f = new File(modelFilename);
+            System.out.println(modelFilename);
             if (!f.exists()) f.createNewFile();
             ModelSerializer.writeModel(model, f, false);
         }
